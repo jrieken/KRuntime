@@ -35,9 +35,10 @@ namespace Microsoft.Framework.PackageManager
                 namedCacheDependencyProvider: new NamedCacheDependencyProvider());
         }
 
-        public void Initialize()
+        public void Initialize(IReport report)
         {
             _applicationHostContext.DependencyWalker.Walk(_project.Name, _project.Version, _targetFramework);
+            ShowDependencyInformation(report);
         }
 
         public bool Build(IList<string> warnings, IList<string> errors)
@@ -132,6 +133,19 @@ namespace Microsoft.Framework.PackageManager
                     SourcePath = path,
                     TargetPath = Path.Combine("lib", _targetFrameworkFolder, Path.GetFileName(path))
                 });
+            }
+        }
+
+        private void ShowDependencyInformation(IReport report)
+        {
+            foreach (var library in _applicationHostContext.DependencyWalker.Libraries)
+            {
+                report.WriteLine("Using {0} dependency {1} for {2}", library.Type, library.Identity, _targetFramework);
+
+                PackageAssembly assemblyInfo;
+                _applicationHostContext.NuGetDependencyProvider.PackageAssemblyLookup.TryGetValue(
+                    library.Identity.Name, out assemblyInfo);
+                report.WriteLine("  File: {0}", assemblyInfo?.Path ?? library.Path);
             }
         }
     }

@@ -127,7 +127,7 @@ namespace Microsoft.Framework.PackageManager
                                                        targetFramework,
                                                        configuration,
                                                        baseOutputPath);
-                        context.Initialize();
+                        context.Initialize(_buildOptions.Reports.Quiet);
 
                         if (context.Build(warnings, errors))
                         {
