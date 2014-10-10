@@ -138,14 +138,20 @@ namespace Microsoft.Framework.PackageManager
 
         private void ShowDependencyInformation(IReport report)
         {
+            var packageAssemblies = _applicationHostContext.NuGetDependencyProvider.PackageAssemblyLookup.Values
+                .ToLookup(a => a.Library.Identity.Name);
             foreach (var library in _applicationHostContext.DependencyWalker.Libraries)
             {
                 report.WriteLine("Using {0} dependency {1} for {2}", library.Type, library.Identity, _targetFramework);
+                report.WriteLine("  Source: {0}", library.Path);
 
-                PackageAssembly assemblyInfo;
-                _applicationHostContext.NuGetDependencyProvider.PackageAssemblyLookup.TryGetValue(
-                    library.Identity.Name, out assemblyInfo);
-                report.WriteLine("  File: {0}", assemblyInfo?.Path ?? library.Path);
+                if (library.Type == "Package")
+                {
+                    foreach (var assembly in packageAssemblies[library.Identity.Name])
+                    {
+                        report.WriteLine("  File: {0}", assembly.RelativePath);
+                    }
+                }
             }
         }
     }
