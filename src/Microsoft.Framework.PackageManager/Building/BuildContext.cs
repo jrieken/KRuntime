@@ -147,7 +147,6 @@ namespace Microsoft.Framework.PackageManager
             var metadataFileRefs = projectExport.MetadataReferences
                 .OfType<IMetadataFileReference>();
 
-            var resolver = new DefaultPackagePathResolver(_applicationHostContext.PackagesDirectory);
             foreach (var library in _applicationHostContext.DependencyWalker.Libraries)
             {
                 var libraryPath = NormalizeDirectoryPath(library.Path);
@@ -158,9 +157,7 @@ namespace Microsoft.Framework.PackageManager
                 {
                     // TODO: temporarily use prefix to tell whether an assembly belongs to a package
                     // Should expose LibraryName from IMetadataReference later for more efficient lookup
-                    var packagePath = resolver.GetInstallPath(library.Identity.Name, library.Identity.Version);
-                    packagePath = NormalizeDirectoryPath(packagePath);
-                    var packageAssemblies = metadataFileRefs.Where(x => Path.GetFullPath(x.Path).StartsWith(packagePath));
+                    var packageAssemblies = metadataFileRefs.Where(x => Path.GetFullPath(x.Path).StartsWith(libraryPath));
                     foreach (var assembly in packageAssemblies)
                     {
                         var relativeAssemblyPath = PathUtility.GetRelativePath(
